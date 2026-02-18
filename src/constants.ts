@@ -23,6 +23,7 @@ export const TABS: { id: TabId; label: string }[] = [
   { id: "calls", label: "Calls" },
   { id: "numbers", label: "Numbers" },
   { id: "logs", label: "Logs" },
+  { id: "account", label: "Account" },
 ];
 
 export const FOCUS_ORDERS: Record<TabId, FocusZone[]> = {
@@ -30,9 +31,11 @@ export const FOCUS_ORDERS: Record<TabId, FocusZone[]> = {
   calls: ["tabs", "call-list", "dialer-from", "dialer-to", "dialer-url"],
   numbers: ["tabs", "number-list", "number-friendly-name", "number-voice-url", "number-sms-url"],
   logs: ["tabs", "log-list", "log-detail"],
+  account: ["tabs", "profile-list", "account-detail"],
 };
 
 export const POLL_INTERVAL_MS = 15_000;
+export const ACCOUNT_POLL_INTERVAL_MS = 60_000;
 export const MAX_MESSAGES = 50;
 export const MAX_CALLS = 50;
 export const MAX_NUMBERS = 50;

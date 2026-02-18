@@ -6,6 +6,8 @@ import { usePhoneNumbers } from "./hooks/use-phone-numbers";
 import { useSendMessage } from "./hooks/use-send-message";
 import { useMakeCall } from "./hooks/use-make-call";
 import { useUpdateNumber } from "./hooks/use-update-number";
+import { useProfiles } from "./hooks/use-profiles";
+import { useSwitchProfile } from "./hooks/use-switch-profile";
 import { TopBar } from "./components/top-bar";
 import { StatusBar } from "./components/status-bar";
 import { MessagesView } from "./components/messages-view";
@@ -13,6 +15,7 @@ import { CallsView } from "./components/calls-view";
 import { NumbersView } from "./components/numbers-view";
 import { useDebuggerLogs } from "./hooks/use-debugger-logs";
 import { LogsView } from "./components/logs-view";
+import { AccountView } from "./components/account-view";
 import { colors } from "./constants";
 import type { TabId } from "./types";
 
@@ -33,7 +36,17 @@ export function App() {
     loading: logsLoading,
     error: logsError,
     lastRefresh: logsLastRefresh,
+    refresh: refreshLogs,
   } = useDebuggerLogs();
+  const {
+    profiles,
+    balance,
+    usage,
+    loading: profilesLoading,
+    error: profilesError,
+    lastRefresh: profilesLastRefresh,
+    refresh: refreshProfiles,
+  } = useProfiles();
 
   const onSendSuccess = useCallback(() => {
     refreshMessages();
@@ -53,6 +66,18 @@ export function App() {
 
   const { update: updateNumber, updating, error: updateError } = useUpdateNumber({
     onSuccess: onUpdateSuccess,
+  });
+
+  const onSwitchSuccess = useCallback(() => {
+    refreshProfiles();
+    refreshMessages();
+    refreshCalls();
+    refreshNumbers();
+    refreshLogs();
+  }, [refreshProfiles, refreshMessages, refreshCalls, refreshNumbers, refreshLogs]);
+
+  const { switchProfile: doSwitchProfile, switching, error: switchError } = useSwitchProfile({
+    onSuccess: onSwitchSuccess,
   });
 
   const handleUpdate = useCallback(
@@ -80,12 +105,14 @@ export function App() {
     activeTab === "calls" ? callsLastRefresh :
     activeTab === "numbers" ? numbersLastRefresh :
     activeTab === "logs" ? logsLastRefresh :
+    activeTab === "account" ? profilesLastRefresh :
     messagesLastRefresh;
 
   const activeError =
     activeTab === "calls" ? callsError :
     activeTab === "numbers" ? numbersError :
     activeTab === "logs" ? logsError :
+    activeTab === "account" ? profilesError :
     messagesError;
 
   return (
@@ -135,18 +162,31 @@ export function App() {
           updateError={updateError}
           onUpdate={handleUpdate}
         />
-      ) : (
+      ) : activeTab === "logs" ? (
         <LogsView
           logs={debuggerLogs}
           logsLoading={logsLoading}
           logsError={logsError}
           zone={zone}
         />
+      ) : (
+        <AccountView
+          profiles={profiles}
+          balance={balance}
+          usage={usage}
+          profilesLoading={profilesLoading}
+          profilesError={profilesError}
+          phoneNumberCount={phoneNumbers.length}
+          zone={zone}
+          switching={switching}
+          switchError={switchError}
+          onSwitch={doSwitchProfile}
+        />
       )}
 
       <StatusBar
         lastRefresh={lastRefresh}
-        sending={sending || calling || updating}
+        sending={sending || calling || updating || switching}
         error={activeError}
       />
     </box>

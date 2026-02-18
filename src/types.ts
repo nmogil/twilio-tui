@@ -47,6 +47,31 @@ export interface TwilioDebuggerLog {
   url: string;
 }
 
+export interface TwilioProfile {
+  id: string;
+  accountSid: string;
+  active: boolean;
+}
+
+export interface TwilioBalance {
+  balance: string;
+  currency: string;
+  accountSid: string;
+}
+
+export interface TwilioUsageRecord {
+  category: string;
+  description: string;
+  count: string;
+  countUnit: string;
+  price: string;
+  priceUnit: string;
+  startDate: string;
+  endDate: string;
+  usage: string;
+  usageUnit: string;
+}
+
 export type FocusZone =
   | "tabs"
   | "message-list"
@@ -62,9 +87,11 @@ export type FocusZone =
   | "number-voice-url"
   | "number-sms-url"
   | "log-list"
-  | "log-detail";
+  | "log-detail"
+  | "profile-list"
+  | "account-detail";
 
-export type TabId = "messages" | "calls" | "numbers" | "logs";
+export type TabId = "messages" | "calls" | "numbers" | "logs" | "account";
 
 export type CliResult<T> =
   | { ok: true; data: T }
