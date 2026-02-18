@@ -29,10 +29,11 @@ export const FOCUS_ORDERS: Record<TabId, FocusZone[]> = {
   messages: ["tabs", "message-list", "from-select", "to-input", "body-textarea"],
   calls: ["tabs", "call-list", "dialer-from", "dialer-to", "dialer-url"],
   numbers: ["tabs", "number-list", "number-friendly-name", "number-voice-url", "number-sms-url"],
-  logs: ["tabs"],
+  logs: ["tabs", "log-list", "log-detail"],
 };
 
 export const POLL_INTERVAL_MS = 15_000;
 export const MAX_MESSAGES = 50;
 export const MAX_CALLS = 50;
 export const MAX_NUMBERS = 50;
+export const MAX_LOGS = 50;

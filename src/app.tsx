@@ -11,7 +11,8 @@ import { StatusBar } from "./components/status-bar";
 import { MessagesView } from "./components/messages-view";
 import { CallsView } from "./components/calls-view";
 import { NumbersView } from "./components/numbers-view";
-import { PlaceholderTab } from "./components/placeholder-tab";
+import { useDebuggerLogs } from "./hooks/use-debugger-logs";
+import { LogsView } from "./components/logs-view";
 import { colors } from "./constants";
 import type { TabId } from "./types";
 
@@ -27,6 +28,12 @@ export function App() {
     lastRefresh: numbersLastRefresh,
     refresh: refreshNumbers,
   } = usePhoneNumbers();
+  const {
+    logs: debuggerLogs,
+    loading: logsLoading,
+    error: logsError,
+    lastRefresh: logsLastRefresh,
+  } = useDebuggerLogs();
 
   const onSendSuccess = useCallback(() => {
     refreshMessages();
@@ -72,11 +79,13 @@ export function App() {
   const lastRefresh =
     activeTab === "calls" ? callsLastRefresh :
     activeTab === "numbers" ? numbersLastRefresh :
+    activeTab === "logs" ? logsLastRefresh :
     messagesLastRefresh;
 
   const activeError =
     activeTab === "calls" ? callsError :
     activeTab === "numbers" ? numbersError :
+    activeTab === "logs" ? logsError :
     messagesError;
 
   return (
@@ -127,7 +136,12 @@ export function App() {
           onUpdate={handleUpdate}
         />
       ) : (
-        <PlaceholderTab tabId={activeTab} />
+        <LogsView
+          logs={debuggerLogs}
+          logsLoading={logsLoading}
+          logsError={logsError}
+          zone={zone}
+        />
       )}
 
       <StatusBar

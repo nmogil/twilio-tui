@@ -30,6 +30,23 @@ export interface TwilioPhoneNumber {
   statusCallbackUrl: string | null;
 }
 
+export interface TwilioDebuggerLog {
+  sid: string;
+  accountSid: string;
+  logLevel: string;
+  alertText: string;
+  dateCreated: string;
+  dateUpdated: string;
+  dateGenerated: string;
+  errorCode: string;
+  moreInfo: string;
+  requestUrl: string;
+  requestMethod: string;
+  resourceSid: string | null;
+  serviceSid: string | null;
+  url: string;
+}
+
 export type FocusZone =
   | "tabs"
   | "message-list"
@@ -43,7 +60,9 @@ export type FocusZone =
   | "number-list"
   | "number-friendly-name"
   | "number-voice-url"
-  | "number-sms-url";
+  | "number-sms-url"
+  | "log-list"
+  | "log-detail";
 
 export type TabId = "messages" | "calls" | "numbers" | "logs";
 
