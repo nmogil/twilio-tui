@@ -10,6 +10,9 @@ interface LogListProps {
   focused: boolean;
   selectedIndex: number;
   onSelectedIndexChange: (index: number) => void;
+  onCycleLevel?: () => void;
+  onToggleAutoScroll?: () => void;
+  onToggleFastRefresh?: () => void;
 }
 
 export function LogList({
@@ -19,6 +22,9 @@ export function LogList({
   focused,
   selectedIndex,
   onSelectedIndexChange,
+  onCycleLevel,
+  onToggleAutoScroll,
+  onToggleFastRefresh,
 }: LogListProps) {
   useKeyboard((key) => {
     if (!focused) return;
@@ -27,6 +33,12 @@ export function LogList({
       onSelectedIndexChange(Math.min(selectedIndex + 1, logs.length - 1));
     } else if (key.name === "k" || key.name === "up") {
       onSelectedIndexChange(Math.max(selectedIndex - 1, 0));
+    } else if (key.name === "f") {
+      onCycleLevel?.();
+    } else if (key.name === "a") {
+      onToggleAutoScroll?.();
+    } else if (key.name === "r") {
+      onToggleFastRefresh?.();
     }
   });
 

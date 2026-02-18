@@ -28,7 +28,7 @@ export function LogDetailPanel({ log, zone }: LogDetailPanelProps) {
         title="Log Details"
         style={{
           border: true,
-          borderColor: colors.border,
+          borderColor,
           width: "55%",
           flexDirection: "column",
           padding: 1,
@@ -96,7 +96,7 @@ export function LogDetailPanel({ log, zone }: LogDetailPanelProps) {
         <text fg={colors.fgDark}>{log.sid}</text>
       </box>
       <box style={{ flexGrow: 1 }} />
-      <text fg={colors.fgDark}>Tab to switch panes | Esc to tabs</text>
+      <text fg={colors.fgDark}>f:filter | a:auto-scroll | r:refresh | Tab:switch | Esc:tabs</text>
     </box>
   );
 }

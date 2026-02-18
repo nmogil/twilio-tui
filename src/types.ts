@@ -97,6 +97,12 @@ export interface TwilioUsageRecord {
   usageUnit: string;
 }
 
+export interface CallUpdateParams {
+  status?: "completed" | "canceled";
+  twiml?: string;
+  url?: string;
+}
+
 export type FocusZone =
   | "tabs"
   | "message-list"
@@ -120,6 +126,7 @@ export type FocusZone =
   | "search-results"
   | "purchase-panel"
   | "log-list"
+  | "log-search"
   | "log-detail"
   | "profile-list"
   | "account-detail";

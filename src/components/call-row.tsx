@@ -4,7 +4,10 @@ import type { TwilioCall } from "../types";
 interface CallRowProps {
   call: TwilioCall;
   selected: boolean;
+  held?: boolean;
 }
+
+const ACTIVE_STATUSES = new Set(["ringing", "in-progress", "queued"]);
 
 const CALL_STATUS_COLORS: Record<string, string> = {
   completed: colors.green,
@@ -36,14 +39,23 @@ function formatDuration(duration: string | null): string {
   return `${s}s`;
 }
 
-export function CallRow({ call, selected }: CallRowProps) {
+export function CallRow({ call, selected, held }: CallRowProps) {
   const isInbound = call.direction.includes("inbound");
+  const isActive = ACTIVE_STATUSES.has(call.status);
   const arrow = isInbound ? "\u2190" : "\u2192";
   const arrowColor = isInbound ? colors.cyan : colors.orange;
   const party = isInbound ? call.from : call.to;
   const date = formatDate(call.dateCreated);
   const duration = formatDuration(call.duration);
   const statusColor = CALL_STATUS_COLORS[call.status] ?? colors.fgDark;
+
+  const prefix = isActive ? "\u25CF " : "  ";
+  const prefixColor = isActive
+    ? (CALL_STATUS_COLORS[call.status] ?? colors.fg)
+    : colors.fgDark;
+
+  const statusDisplay = held ? "[HOLD]" : call.status;
+  const statusDisplayColor = held ? colors.magenta : statusColor;
 
   return (
     <box
@@ -54,11 +66,12 @@ export function CallRow({ call, selected }: CallRowProps) {
         padding: 0,
       }}
     >
+      <text fg={prefixColor}>{prefix}</text>
       <text fg={arrowColor}>{arrow}</text>
       <text fg={colors.fg}>{party.padEnd(15)}</text>
       <text fg={colors.fgDark}>{date}</text>
       <text fg={colors.fg}>{duration.padEnd(7)}</text>
-      <text fg={statusColor}>{call.status}</text>
+      <text fg={statusDisplayColor}>{statusDisplay}</text>
     </box>
   );
 }

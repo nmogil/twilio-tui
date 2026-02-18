@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { listCalls } from "../twilio/calls";
-import { POLL_INTERVAL_MS } from "../constants";
+import { POLL_INTERVAL_MS, ACTIVE_POLL_INTERVAL_MS } from "../constants";
 import type { TwilioCall } from "../types";
+
+const ACTIVE_STATUSES = new Set(["ringing", "in-progress", "queued"]);
 
 export function useCalls() {
   const [calls, setCalls] = useState<TwilioCall[]>([]);
@@ -9,6 +11,13 @@ export function useCalls() {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const mountedRef = useRef(true);
+
+  const hasActiveCalls = useMemo(
+    () => calls.some((c) => ACTIVE_STATUSES.has(c.status)),
+    [calls]
+  );
+
+  const pollInterval = hasActiveCalls ? ACTIVE_POLL_INTERVAL_MS : POLL_INTERVAL_MS;
 
   const fetchCalls = useCallback(async () => {
     const result = await listCalls();
@@ -24,17 +33,22 @@ export function useCalls() {
     setLoading(false);
   }, []);
 
+  const isFirstMount = useRef(true);
+
   useEffect(() => {
     mountedRef.current = true;
-    fetchCalls();
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      fetchCalls();
+    }
 
-    const interval = setInterval(fetchCalls, POLL_INTERVAL_MS);
+    const interval = setInterval(fetchCalls, pollInterval);
 
     return () => {
       mountedRef.current = false;
       clearInterval(interval);
     };
-  }, [fetchCalls]);
+  }, [fetchCalls, pollInterval]);
 
-  return { calls, loading, error, lastRefresh, refresh: fetchCalls };
+  return { calls, loading, error, lastRefresh, hasActiveCalls, refresh: fetchCalls };
 }

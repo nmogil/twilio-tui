@@ -1,4 +1,4 @@
-import type { TwilioCall, CliResult } from "../types";
+import type { TwilioCall, CallUpdateParams, CliResult } from "../types";
 import { execTwilio } from "./cli";
 import { MAX_CALLS } from "../constants";
 
@@ -30,4 +30,23 @@ export async function makeCall(
     "--url",
     url,
   ]);
+}
+
+export async function updateCall(
+  sid: string,
+  params: CallUpdateParams
+): Promise<CliResult<TwilioCall>> {
+  const args = ["api", "core", "calls", "update", "--sid", sid];
+
+  if (params.status) {
+    args.push("--status", params.status);
+  }
+  if (params.twiml) {
+    args.push("--twiml", params.twiml);
+  }
+  if (params.url) {
+    args.push("--url", params.url);
+  }
+
+  return execTwilio<TwilioCall>(args);
 }

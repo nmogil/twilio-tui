@@ -31,7 +31,7 @@ export const FOCUS_ORDERS: Record<string, FocusZone[]> = {
   "messages-compose": ["tabs", "from-select", "to-input", "body-textarea"],
   calls: ["tabs", "call-list", "dialer-from", "dialer-to", "dialer-url"],
   numbers: ["tabs", "number-list", "number-friendly-name", "number-voice-url", "number-sms-url"],
-  logs: ["tabs", "log-list", "log-detail"],
+  logs: ["tabs", "log-list", "log-search", "log-detail"],
   account: ["tabs", "profile-list", "account-detail"],
   "numbers-search": [
     "tabs",
@@ -44,9 +44,13 @@ export const FOCUS_ORDERS: Record<string, FocusZone[]> = {
 };
 
 export const POLL_INTERVAL_MS = 15_000;
+export const ACTIVE_POLL_INTERVAL_MS = 5_000;
+export const FAST_POLL_INTERVAL_MS = 5_000;
 export const ACCOUNT_POLL_INTERVAL_MS = 60_000;
 export const MAX_MESSAGES = 50;
 export const MAX_CALLS = 50;
 export const MAX_NUMBERS = 50;
 export const MAX_LOGS = 50;
 export const MAX_SEARCH_RESULTS = 20;
+export const HOLD_MUSIC_TWIML =
+  '<Response><Play loop="0">http://com.twilio.music.classical.s3.amazonaws.com/ith_chopin-702702.mp3</Play></Response>';

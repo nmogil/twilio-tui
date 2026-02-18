@@ -6,6 +6,7 @@ import { usePhoneNumbers } from "./hooks/use-phone-numbers";
 import { useSendMessage } from "./hooks/use-send-message";
 import { useMakeCall } from "./hooks/use-make-call";
 import { useUpdateNumber } from "./hooks/use-update-number";
+import { useUpdateCall } from "./hooks/use-update-call";
 import { usePurchaseNumber } from "./hooks/use-purchase-number";
 import { useProfiles } from "./hooks/use-profiles";
 import { useSwitchProfile } from "./hooks/use-switch-profile";
@@ -17,13 +18,14 @@ import { NumbersView } from "./components/numbers-view";
 import { useDebuggerLogs } from "./hooks/use-debugger-logs";
 import { LogsView } from "./components/logs-view";
 import { AccountView } from "./components/account-view";
-import { colors } from "./constants";
-import type { TabId, NumbersMode, MessagesMode } from "./types";
+import { colors, FAST_POLL_INTERVAL_MS } from "./constants";
+import type { TabId, NumbersMode, MessagesMode, CallUpdateParams } from "./types";
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabId>("messages");
   const [numbersMode, setNumbersMode] = useState<NumbersMode>("manage");
   const [messagesMode, setMessagesMode] = useState<MessagesMode>("conversations");
+  const [logsFastRefresh, setLogsFastRefresh] = useState(false);
   const subMode = (() => {
     if (activeTab === "numbers" && numbersMode === "search") return "search";
     if (activeTab === "messages" && messagesMode === "compose") return "compose";
@@ -31,7 +33,7 @@ export function App() {
   })();
   const { zone, focusZone } = useFocus(activeTab, subMode);
   const { messages, loading: messagesLoading, error: messagesError, lastRefresh: messagesLastRefresh, refresh: refreshMessages } = useMessages();
-  const { calls, loading: callsLoading, error: callsError, lastRefresh: callsLastRefresh, refresh: refreshCalls } = useCalls();
+  const { calls, loading: callsLoading, error: callsError, lastRefresh: callsLastRefresh, hasActiveCalls, refresh: refreshCalls } = useCalls();
   const {
     numbers: phoneNumbers,
     loading: numbersLoading,
@@ -39,13 +41,15 @@ export function App() {
     lastRefresh: numbersLastRefresh,
     refresh: refreshNumbers,
   } = usePhoneNumbers();
+
+  const logsPollInterval = logsFastRefresh ? FAST_POLL_INTERVAL_MS : undefined;
   const {
     logs: debuggerLogs,
     loading: logsLoading,
     error: logsError,
     lastRefresh: logsLastRefresh,
     refresh: refreshLogs,
-  } = useDebuggerLogs();
+  } = useDebuggerLogs(logsPollInterval);
   const {
     profiles,
     balance,
@@ -68,12 +72,20 @@ export function App() {
 
   const { call, calling, error: callError } = useMakeCall({ onSuccess: onCallSuccess });
 
-  const onUpdateSuccess = useCallback(() => {
+  const onUpdateNumberSuccess = useCallback(() => {
     refreshNumbers();
   }, [refreshNumbers]);
 
   const { update: updateNumber, updating, error: updateError } = useUpdateNumber({
-    onSuccess: onUpdateSuccess,
+    onSuccess: onUpdateNumberSuccess,
+  });
+
+  const onUpdateCallSuccess = useCallback(() => {
+    refreshCalls();
+  }, [refreshCalls]);
+
+  const { update: updateCallAction, updating: updatingCall, error: updateCallError } = useUpdateCall({
+    onSuccess: onUpdateCallSuccess,
   });
 
   const onPurchaseSuccess = useCallback(() => {
@@ -124,6 +136,17 @@ export function App() {
     },
     [call]
   );
+
+  const handleUpdateCall = useCallback(
+    (sid: string, params: CallUpdateParams) => {
+      updateCallAction(sid, params);
+    },
+    [updateCallAction]
+  );
+
+  const handleLogsFastRefreshChange = useCallback((fast: boolean) => {
+    setLogsFastRefresh(fast);
+  }, []);
 
   const lastRefresh =
     activeTab === "calls" ? callsLastRefresh :
@@ -177,6 +200,9 @@ export function App() {
           calling={calling}
           callError={callError}
           onCall={handleCall}
+          onUpdateCall={handleUpdateCall}
+          updatingCall={updatingCall}
+          updateCallError={updateCallError}
         />
       ) : activeTab === "numbers" ? (
         <NumbersView
@@ -199,6 +225,7 @@ export function App() {
           logsLoading={logsLoading}
           logsError={logsError}
           zone={zone}
+          onFastRefreshChange={handleLogsFastRefreshChange}
         />
       ) : (
         <AccountView
@@ -217,7 +244,7 @@ export function App() {
 
       <StatusBar
         lastRefresh={lastRefresh}
-        sending={sending || calling || updating || switching || purchasing}
+        sending={sending || calling || updating || updatingCall || switching || purchasing}
         error={activeError}
       />
     </box>
