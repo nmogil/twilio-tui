@@ -30,6 +30,22 @@ export interface TwilioPhoneNumber {
   statusCallbackUrl: string | null;
 }
 
+export interface AvailablePhoneNumber {
+  phoneNumber: string;
+  friendlyName: string;
+  locality: string;
+  region: string;
+  isoCountry: string;
+  postalCode: string;
+  capabilities: {
+    voice: boolean;
+    SMS: boolean;
+    MMS: boolean;
+  };
+}
+
+export type NumbersMode = "manage" | "search";
+
 export interface TwilioDebuggerLog {
   sid: string;
   accountSid: string;
@@ -86,6 +102,11 @@ export type FocusZone =
   | "number-friendly-name"
   | "number-voice-url"
   | "number-sms-url"
+  | "search-country"
+  | "search-area-code"
+  | "search-contains"
+  | "search-results"
+  | "purchase-panel"
   | "log-list"
   | "log-detail"
   | "profile-list"

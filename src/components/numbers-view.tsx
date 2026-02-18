@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useKeyboard } from "@opentui/react";
 import { NumberList } from "./number-list";
 import { NumberDetailPanel } from "./number-detail-panel";
-import type { TwilioPhoneNumber, FocusZone } from "../types";
+import { NumberSearchView } from "./number-search-view";
+import type { TwilioPhoneNumber, FocusZone, NumbersMode } from "../types";
 
 interface NumbersViewProps {
   numbers: TwilioPhoneNumber[];
@@ -14,6 +16,11 @@ interface NumbersViewProps {
     sid: string,
     updates: { friendlyName?: string; voiceUrl?: string; smsUrl?: string }
   ) => void;
+  purchasing: boolean;
+  purchaseError: string | null;
+  onPurchase: (phoneNumber: string) => void;
+  numbersMode: NumbersMode;
+  onModeChange: (mode: NumbersMode) => void;
 }
 
 export function NumbersView({
@@ -24,9 +31,38 @@ export function NumbersView({
   updating,
   updateError,
   onUpdate,
+  purchasing,
+  purchaseError,
+  onPurchase,
+  numbersMode,
+  onModeChange,
 }: NumbersViewProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedNumber = numbers[selectedIndex] ?? null;
+
+  useKeyboard((key) => {
+    if (numbersMode === "manage" && zone === "number-list" && key.name === "s") {
+      onModeChange("search");
+    }
+    if (
+      numbersMode === "search" &&
+      (zone === "search-results" || zone === "purchase-panel") &&
+      key.name === "m"
+    ) {
+      onModeChange("manage");
+    }
+  });
+
+  if (numbersMode === "search") {
+    return (
+      <NumberSearchView
+        zone={zone}
+        purchasing={purchasing}
+        purchaseError={purchaseError}
+        onPurchase={onPurchase}
+      />
+    );
+  }
 
   return (
     <box style={{ flexDirection: "row", flexGrow: 1 }}>

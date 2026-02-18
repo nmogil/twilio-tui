@@ -6,6 +6,7 @@ import { usePhoneNumbers } from "./hooks/use-phone-numbers";
 import { useSendMessage } from "./hooks/use-send-message";
 import { useMakeCall } from "./hooks/use-make-call";
 import { useUpdateNumber } from "./hooks/use-update-number";
+import { usePurchaseNumber } from "./hooks/use-purchase-number";
 import { useProfiles } from "./hooks/use-profiles";
 import { useSwitchProfile } from "./hooks/use-switch-profile";
 import { TopBar } from "./components/top-bar";
@@ -17,11 +18,15 @@ import { useDebuggerLogs } from "./hooks/use-debugger-logs";
 import { LogsView } from "./components/logs-view";
 import { AccountView } from "./components/account-view";
 import { colors } from "./constants";
-import type { TabId } from "./types";
+import type { TabId, NumbersMode } from "./types";
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabId>("messages");
-  const { zone, focusZone } = useFocus(activeTab);
+  const [numbersMode, setNumbersMode] = useState<NumbersMode>("manage");
+  const { zone, focusZone } = useFocus(
+    activeTab,
+    activeTab === "numbers" && numbersMode === "search" ? "search" : undefined
+  );
   const { messages, loading: messagesLoading, error: messagesError, lastRefresh: messagesLastRefresh, refresh: refreshMessages } = useMessages();
   const { calls, loading: callsLoading, error: callsError, lastRefresh: callsLastRefresh, refresh: refreshCalls } = useCalls();
   const {
@@ -67,6 +72,22 @@ export function App() {
   const { update: updateNumber, updating, error: updateError } = useUpdateNumber({
     onSuccess: onUpdateSuccess,
   });
+
+  const onPurchaseSuccess = useCallback(() => {
+    refreshNumbers();
+    setNumbersMode("manage");
+  }, [refreshNumbers]);
+
+  const { purchase: purchaseNumber, purchasing, error: purchaseError } = usePurchaseNumber({
+    onSuccess: onPurchaseSuccess,
+  });
+
+  const handlePurchase = useCallback(
+    (phoneNumber: string) => {
+      purchaseNumber(phoneNumber);
+    },
+    [purchaseNumber]
+  );
 
   const onSwitchSuccess = useCallback(() => {
     refreshProfiles();
@@ -161,6 +182,11 @@ export function App() {
           updating={updating}
           updateError={updateError}
           onUpdate={handleUpdate}
+          purchasing={purchasing}
+          purchaseError={purchaseError}
+          onPurchase={handlePurchase}
+          numbersMode={numbersMode}
+          onModeChange={setNumbersMode}
         />
       ) : activeTab === "logs" ? (
         <LogsView
@@ -186,7 +212,7 @@ export function App() {
 
       <StatusBar
         lastRefresh={lastRefresh}
-        sending={sending || calling || updating || switching}
+        sending={sending || calling || updating || switching || purchasing}
         error={activeError}
       />
     </box>
