@@ -29,10 +29,10 @@ export function StatusBar({ lastRefresh, sending, error }: StatusBarProps) {
     >
       <text fg={colors.green}>{"\u25CF"} Connected</text>
       <text fg={colors.fgDark}>{refreshText}</text>
-      {sending && <text fg={colors.yellow}>Sending...</text>}
+      {sending && <text fg={colors.yellow}>Working...</text>}
       {error && <text fg={colors.red}>{error}</text>}
       <text fg={colors.fgDark}>
-        Tab:focus | Esc:tabs | Ctrl+Enter:send | Ctrl+C:quit
+        Tab:focus | Esc:tabs | Ctrl+Enter:action | Ctrl+C:quit
       </text>
     </box>
   );

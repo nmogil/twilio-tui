@@ -1,21 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { listPhoneNumbers } from "../twilio/phone-numbers";
+import { listCalls } from "../twilio/calls";
 import { POLL_INTERVAL_MS } from "../constants";
-import type { TwilioPhoneNumber } from "../types";
+import type { TwilioCall } from "../types";
 
-export function usePhoneNumbers() {
-  const [numbers, setNumbers] = useState<TwilioPhoneNumber[]>([]);
+export function useCalls() {
+  const [calls, setCalls] = useState<TwilioCall[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const mountedRef = useRef(true);
 
-  const fetchNumbers = useCallback(async () => {
-    const result = await listPhoneNumbers();
+  const fetchCalls = useCallback(async () => {
+    const result = await listCalls();
     if (!mountedRef.current) return;
 
     if (result.ok) {
-      setNumbers(result.data);
+      setCalls(result.data);
       setError(null);
       setLastRefresh(new Date());
     } else {
@@ -26,15 +26,15 @@ export function usePhoneNumbers() {
 
   useEffect(() => {
     mountedRef.current = true;
-    fetchNumbers();
+    fetchCalls();
 
-    const interval = setInterval(fetchNumbers, POLL_INTERVAL_MS);
+    const interval = setInterval(fetchCalls, POLL_INTERVAL_MS);
 
     return () => {
       mountedRef.current = false;
       clearInterval(interval);
     };
-  }, [fetchNumbers]);
+  }, [fetchCalls]);
 
-  return { numbers, loading, error, lastRefresh, refresh: fetchNumbers };
+  return { calls, loading, error, lastRefresh, refresh: fetchCalls };
 }

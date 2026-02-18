@@ -1,26 +1,59 @@
 import { useState, useCallback } from "react";
 import { useFocus } from "./hooks/use-focus";
 import { useMessages } from "./hooks/use-messages";
+import { useCalls } from "./hooks/use-calls";
 import { usePhoneNumbers } from "./hooks/use-phone-numbers";
 import { useSendMessage } from "./hooks/use-send-message";
+import { useMakeCall } from "./hooks/use-make-call";
+import { useUpdateNumber } from "./hooks/use-update-number";
 import { TopBar } from "./components/top-bar";
 import { StatusBar } from "./components/status-bar";
 import { MessagesView } from "./components/messages-view";
+import { CallsView } from "./components/calls-view";
+import { NumbersView } from "./components/numbers-view";
 import { PlaceholderTab } from "./components/placeholder-tab";
 import { colors } from "./constants";
 import type { TabId } from "./types";
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabId>("messages");
-  const { zone, focusZone } = useFocus();
-  const { messages, loading: messagesLoading, error: messagesError, lastRefresh, refresh } = useMessages();
-  const { numbers: phoneNumbers } = usePhoneNumbers();
+  const { zone, focusZone } = useFocus(activeTab);
+  const { messages, loading: messagesLoading, error: messagesError, lastRefresh: messagesLastRefresh, refresh: refreshMessages } = useMessages();
+  const { calls, loading: callsLoading, error: callsError, lastRefresh: callsLastRefresh, refresh: refreshCalls } = useCalls();
+  const {
+    numbers: phoneNumbers,
+    loading: numbersLoading,
+    error: numbersError,
+    lastRefresh: numbersLastRefresh,
+    refresh: refreshNumbers,
+  } = usePhoneNumbers();
 
   const onSendSuccess = useCallback(() => {
-    refresh();
-  }, [refresh]);
+    refreshMessages();
+  }, [refreshMessages]);
 
   const { send, sending, error: sendError } = useSendMessage({ onSuccess: onSendSuccess });
+
+  const onCallSuccess = useCallback(() => {
+    refreshCalls();
+  }, [refreshCalls]);
+
+  const { call, calling, error: callError } = useMakeCall({ onSuccess: onCallSuccess });
+
+  const onUpdateSuccess = useCallback(() => {
+    refreshNumbers();
+  }, [refreshNumbers]);
+
+  const { update: updateNumber, updating, error: updateError } = useUpdateNumber({
+    onSuccess: onUpdateSuccess,
+  });
+
+  const handleUpdate = useCallback(
+    (sid: string, updates: { friendlyName?: string; voiceUrl?: string; smsUrl?: string }) => {
+      updateNumber(sid, updates);
+    },
+    [updateNumber]
+  );
 
   const handleSend = useCallback(
     (from: string, to: string, body: string) => {
@@ -28,6 +61,23 @@ export function App() {
     },
     [send]
   );
+
+  const handleCall = useCallback(
+    (from: string, to: string, url: string) => {
+      call(from, to, url);
+    },
+    [call]
+  );
+
+  const lastRefresh =
+    activeTab === "calls" ? callsLastRefresh :
+    activeTab === "numbers" ? numbersLastRefresh :
+    messagesLastRefresh;
+
+  const activeError =
+    activeTab === "calls" ? callsError :
+    activeTab === "numbers" ? numbersError :
+    messagesError;
 
   return (
     <box
@@ -55,14 +105,35 @@ export function App() {
           sendError={sendError}
           onSend={handleSend}
         />
+      ) : activeTab === "calls" ? (
+        <CallsView
+          calls={calls}
+          callsLoading={callsLoading}
+          callsError={callsError}
+          phoneNumbers={phoneNumbers}
+          zone={zone}
+          calling={calling}
+          callError={callError}
+          onCall={handleCall}
+        />
+      ) : activeTab === "numbers" ? (
+        <NumbersView
+          numbers={phoneNumbers}
+          numbersLoading={numbersLoading}
+          numbersError={numbersError}
+          zone={zone}
+          updating={updating}
+          updateError={updateError}
+          onUpdate={handleUpdate}
+        />
       ) : (
         <PlaceholderTab tabId={activeTab} />
       )}
 
       <StatusBar
         lastRefresh={lastRefresh}
-        sending={sending}
-        error={messagesError}
+        sending={sending || calling || updating}
+        error={activeError}
       />
     </box>
   );
