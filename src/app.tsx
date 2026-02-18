@@ -18,15 +18,18 @@ import { useDebuggerLogs } from "./hooks/use-debugger-logs";
 import { LogsView } from "./components/logs-view";
 import { AccountView } from "./components/account-view";
 import { colors } from "./constants";
-import type { TabId, NumbersMode } from "./types";
+import type { TabId, NumbersMode, MessagesMode } from "./types";
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabId>("messages");
   const [numbersMode, setNumbersMode] = useState<NumbersMode>("manage");
-  const { zone, focusZone } = useFocus(
-    activeTab,
-    activeTab === "numbers" && numbersMode === "search" ? "search" : undefined
-  );
+  const [messagesMode, setMessagesMode] = useState<MessagesMode>("conversations");
+  const subMode = (() => {
+    if (activeTab === "numbers" && numbersMode === "search") return "search";
+    if (activeTab === "messages" && messagesMode === "compose") return "compose";
+    return undefined;
+  })();
+  const { zone, focusZone } = useFocus(activeTab, subMode);
   const { messages, loading: messagesLoading, error: messagesError, lastRefresh: messagesLastRefresh, refresh: refreshMessages } = useMessages();
   const { calls, loading: callsLoading, error: callsError, lastRefresh: callsLastRefresh, refresh: refreshCalls } = useCalls();
   const {
@@ -161,6 +164,8 @@ export function App() {
           sending={sending}
           sendError={sendError}
           onSend={handleSend}
+          messagesMode={messagesMode}
+          onModeChange={setMessagesMode}
         />
       ) : activeTab === "calls" ? (
         <CallsView

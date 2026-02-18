@@ -27,7 +27,8 @@ export const TABS: { id: TabId; label: string }[] = [
 ];
 
 export const FOCUS_ORDERS: Record<string, FocusZone[]> = {
-  messages: ["tabs", "message-list", "from-select", "to-input", "body-textarea"],
+  messages: ["tabs", "conversation-list", "thread-view", "reply-textarea"],
+  "messages-compose": ["tabs", "from-select", "to-input", "body-textarea"],
   calls: ["tabs", "call-list", "dialer-from", "dialer-to", "dialer-url"],
   numbers: ["tabs", "number-list", "number-friendly-name", "number-voice-url", "number-sms-url"],
   logs: ["tabs", "log-list", "log-detail"],

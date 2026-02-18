@@ -9,6 +9,13 @@ export interface TwilioMessage {
   dateSent: string | null;
 }
 
+export interface Conversation {
+  contactNumber: string;
+  lastMessage: TwilioMessage;
+  messages: TwilioMessage[];
+  messageCount: number;
+}
+
 export interface TwilioCall {
   sid: string;
   from: string;
@@ -45,6 +52,8 @@ export interface AvailablePhoneNumber {
 }
 
 export type NumbersMode = "manage" | "search";
+
+export type MessagesMode = "conversations" | "compose";
 
 export interface TwilioDebuggerLog {
   sid: string;
@@ -91,6 +100,9 @@ export interface TwilioUsageRecord {
 export type FocusZone =
   | "tabs"
   | "message-list"
+  | "conversation-list"
+  | "thread-view"
+  | "reply-textarea"
   | "from-select"
   | "to-input"
   | "body-textarea"
